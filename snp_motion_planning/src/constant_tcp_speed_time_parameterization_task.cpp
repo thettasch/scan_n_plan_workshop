@@ -146,17 +146,20 @@ protected:
     if (!solver.compute(*trajectory, cur_composite_profile->max_velocity_scaling_factor,
                         cur_composite_profile->max_acceleration_scaling_factor))
     {
+      std::cout << "Failed to perform constant TCP speed time parameterization for process input" << std::endl;
       info->message =
           "Failed to perform constant TCP speed time parameterization for process input: " + ci.getDescription();
       info->elapsed_time = timer.elapsedSeconds();
       return info;
     }
+    std::cout << "Passed compute" << std::endl;
 
     info->color = "green";
     info->message = "Constant TCP speed time parameterization succeeded";
     input.data_storage.setData(output_keys_[0], input_data_poly);
     info->return_value = 1;
     info->elapsed_time = timer.elapsedSeconds();
+    std::cout << "Finishing ConstantTCPSpeedTimeParameterizationTask::runImpl(...)" << std::endl;
     return info;
   }
 

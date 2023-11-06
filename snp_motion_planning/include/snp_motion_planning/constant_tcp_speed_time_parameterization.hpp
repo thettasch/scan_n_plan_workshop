@@ -54,6 +54,10 @@ public:
     , eq_radius_(std::max((max_translational_vel / max_rotational_vel), (max_translational_acc / max_rotational_acc)))
   {
     std::cout << "Starting ConstantTCPSpeedTimeParameterization(...)" << std::endl;
+    std::cout << "\tmax_translational_vel = " << max_translational_vel << std::endl;
+    std::cout << "\tmax_translational_acc = " << max_translational_acc << std::endl;
+    std::cout << "\tmax_rotational_vel = " << max_rotational_vel << std::endl;
+    std::cout << "\tmax_rotational_acc = " << max_rotational_acc << std::endl;
     // Construct the KDL chain
     tesseract_kinematics::KDLChainData data;
     if (!tesseract_kinematics::parseSceneGraph(data, *env->getSceneGraph(), motion_group->getBaseLinkName(), tcp))
@@ -78,6 +82,8 @@ public:
 
       const double max_vel = max_velocity_scaling_factor * max_translational_vel;
       const double max_acc = max_acceleration_scaling_factor * max_translational_acc;
+      std::cout << "max_translational_vel = " << max_translational_vel << std::endl;
+      std::cout << "max_translational_acc = " << max_translational_acc << std::endl;
       std::cout << "max_vel = " << max_vel << std::endl;
       std::cout << "max_acc = " << max_acc << std::endl;
       KDL::VelocityProfile_TrapHalf v_trap_half(max_vel, max_acc, true);
