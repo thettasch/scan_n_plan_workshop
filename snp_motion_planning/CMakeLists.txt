@@ -27,7 +27,11 @@ find_package(tesseract_kinematics REQUIRED)
 include_directories(include/${PROJECT_NAME})
 add_library(${PROJECT_NAME}_tasks SHARED src/constant_tcp_speed_time_parameterization_task.cpp
                                          src/kinematic_limits_check_task.cpp)
+
+ament_export_include_directories(include)
+# ament_export_libraries(${PROJECT_NAME})
 ament_target_dependencies(${PROJECT_NAME}_tasks ${ROS2_DEPS})
+
 target_link_libraries(
   ${PROJECT_NAME}_tasks
   tesseract::tesseract_common
@@ -36,12 +40,30 @@ target_link_libraries(
   tesseract::tesseract_kinematics_kdl
   tesseract::tesseract_time_parameterization_core)
 
-install(DIRECTORY include/${PROJECT_NAME} DESTINATION include)
+ament_export_targets(${PROJECT_NAME}_tasks HAS_LIBRARY_TARGET)
+ament_export_dependencies(${ROS2_DEPS})
+  
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
+
+install(
+  TARGETS ${PROJECT_NAME}_tasks
+  EXPORT ${PROJECT_NAME}_tasks
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+  
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
 endif()
+
 
 ament_export_dependencies(${ROS2_DEPS})
 ament_package()
