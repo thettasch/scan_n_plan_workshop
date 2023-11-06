@@ -29,8 +29,9 @@ find_package(yaml-cpp REQUIRED)
 # Planning server
 
 # Plugin Library
-add_library(${PROJECT_NAME}_tasks SHARED src/plugins/tasks/constant_tcp_speed_time_parameterization_task.cpp
-                                         src/plugins/tasks/kinematic_limits_check_task.cpp)
+include_directories(include/${PROJECT_NAME})
+add_library(${PROJECT_NAME}_tasks SHARED src/constant_tcp_speed_time_parameterization_task.cpp
+                                         src/kinematic_limits_check_task.cpp)
 ament_target_dependencies(${PROJECT_NAME}_tasks ${ROS2_DEPS})
 target_link_libraries(
   ${PROJECT_NAME}_tasks
@@ -40,6 +41,8 @@ target_link_libraries(
   tesseract::tesseract_kinematics_kdl
   tesseract::tesseract_time_parameterization_core
   yaml-cpp)
+
+install(DIRECTORY include/${PROJECT_NAME} DESTINATION include)
 
 # Install the executable(s)
 # install(TARGETS ${PROJECT_NAME}_node DESTINATION lib/${PROJECT_NAME})
