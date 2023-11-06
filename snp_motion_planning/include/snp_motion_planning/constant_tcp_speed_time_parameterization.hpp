@@ -53,17 +53,20 @@ public:
     , max_translational_acc(max_translational_acc)
     , eq_radius_(std::max((max_translational_vel / max_rotational_vel), (max_translational_acc / max_rotational_acc)))
   {
+    std::cout << "Starting ConstantTCPSpeedTimeParameterization(...)" << std::endl;
     // Construct the KDL chain
     tesseract_kinematics::KDLChainData data;
     if (!tesseract_kinematics::parseSceneGraph(data, *env->getSceneGraph(), motion_group->getBaseLinkName(), tcp))
       throw std::runtime_error("Failed to construct KDL chain");
 
     kdl_chain_ = data.robot_chain;
+    std::cout << "Finishing ConstantTCPSpeedTimeParameterization(...)" << std::endl;
   }
 
   bool compute(tesseract_planning::TrajectoryContainer& trajectory, double max_velocity_scaling_factor = 1.0,
                double max_acceleration_scaling_factor = 1.0) const
   {
+    std::cout << "Starting ConstantTCPSpeedTimeParameterization::compute(...)" << std::endl;
     try
     {
       auto path = new KDL::Path_Composite();
@@ -75,6 +78,8 @@ public:
 
       const double max_vel = max_velocity_scaling_factor * max_translational_vel;
       const double max_acc = max_acceleration_scaling_factor * max_translational_acc;
+      std::cout << "max_vel = " << max_vel << std::endl;
+      std::cout << "max_acc = " << max_acc << std::endl;
       KDL::VelocityProfile_TrapHalf v_trap_half(max_vel, max_acc, true);
       auto v_trap = new KDL::VelocityProfile_Trap(max_vel, max_acc);
 
@@ -129,6 +134,7 @@ public:
         // Iterate in reverse through the path until we hit a point whose velocity is
         for (int i = path->GetNrOfSegments(); i-- > middle_segment;)
         {
+          std::cout << "Loop ("<<i<<") ConstantTCPSpeedTimeParameterization::compute(...) -> Iterate in reverse through the path until we hit a point whose velocity is" << std::endl;
           reverse_path.Add(path->GetSegment(i), false);
 
           double reverse_path_length = reverse_path.PathLength() > std::numeric_limits<double>::epsilon() ?
@@ -147,13 +153,17 @@ public:
             break;
           }
         }
+        std::cout << "Finished Loop ConstantTCPSpeedTimeParameterization::compute(...) -> Iterate in reverse through the path until we hit a point whose velocity is" << std::endl;
       }
 
       // Update the trajectory
       for (Eigen::Index i = 0; i < trajectory.size(); ++i)
       {
+        std::cout << "Loop ("<<i<<") ConstantTCPSpeedTimeParameterization::compute(...) -> Update the trajectory" << std::endl;
         const Eigen::VectorXd& joints = trajectory.getPosition(i);
+        std::cout << "\tjoints = " << joints << std::endl;
         double t = times[i];
+        std::cout << "\tt = " << t << std::endl;
 
         // Compute the joint velocity and acceleration
         KDL::Trajectory_Segment traj(path, v_trap, false);
@@ -165,6 +175,7 @@ public:
         // Update the trajectory container
         trajectory.setData(i, joint_vel, joint_acc, t);
       }
+      std::cout << "Finished Loop ConstantTCPSpeedTimeParameterization::compute(...) -> Update the trajectory" << std::endl;
     }
     catch (KDL::Error& e)
     {
@@ -179,12 +190,14 @@ public:
       return false;
     }
 
+    std::cout << "Finishing ConstantTCPSpeedTimeParameterization::compute(...)" << std::endl;
     return true;
   }
 
 private:
   Eigen::VectorXd computeJointVelocity(const KDL::Twist& x_dot, const Eigen::VectorXd& q) const
   {
+    std::cout << "Starting ConstantTCPSpeedTimeParameterization::computeJointVelocity(...)" << std::endl;
     Eigen::MatrixXd jac = motion_group->calcJacobian(q, tcp);
 
     Eigen::Index dof = q.size();
@@ -199,12 +212,14 @@ private:
         throw std::runtime_error("Failed to solve pseudo-inverse for joint velocity calculation");
     }
 
+    std::cout << "Finishing ConstantTCPSpeedTimeParameterization::computeJointVelocity(...)" << std::endl;
     return q_dot;
   }
 
   Eigen::VectorXd computeJointAcceleration(const KDL::Twist& x_dot_dot, const Eigen::VectorXd& q,
                                            const Eigen::VectorXd& q_dot) const
   {
+    std::cout << "Starting ConstantTCPSpeedTimeParameterization::computeJointAcceleration(...)" << std::endl;
     // Create a Jacobian derivative solver
     KDL::ChainJntToJacDotSolver solver(kdl_chain_);
 
@@ -240,6 +255,7 @@ private:
         throw std::runtime_error("Failed to solve pseudo-inverse for acceleration calculation");
     }
 
+    std::cout << "Finishing ConstantTCPSpeedTimeParameterization::computeJointAcceleration(...)" << std::endl;
     return q_dot_dot;
   }
 
